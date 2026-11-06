@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TANBIR TCP — Official</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  @keyframes rgbBorder{
+    0%{border-color:#2563eb;box-shadow:0 0 22px #2563eb;}
+    25%{border-color:#38bdf8;box-shadow:0 0 22px #38bdf8;}
+    50%{border-color:#0ea5e9;box-shadow:0 0 22px #0ea5e9;}
+    75%{border-color:#00e5ff;box-shadow:0 0 22px #00e5ff;}
+    100%{border-color:#2563eb;box-shadow:0 0 22px #2563eb;}
+  }
+  @keyframes rgbText{
+    0%{color:#2563eb;text-shadow:0 0 15px #2563eb;}
+    25%{color:#38bdf8;text-shadow:0 0 15px #38bdf8;}
+    50%{color:#0ea5e9;text-shadow:0 0 15px #0ea5e9;}
+    75%{color:#00e5ff;text-shadow:0 0 15px #00e5ff;}
+    100%{color:#2563eb;text-shadow:0 0 15px #2563eb;}
+  }
+  @keyframes bgShift{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+  @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  @keyframes shine{0%{background-position:-200% 0}100%{background-position:200% 0}}
+  @keyframes pulseDot{
+    0%,100%{box-shadow:0 0 0 0 rgba(14,165,233,0.7);}
+    50%{box-shadow:0 0 0 10px rgba(14,165,233,0);}
+  }
+  body{background:#02040a;color:white;font-family:'Rajdhani',sans-serif;overflow-x:hidden;margin:0;}
+  #bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.6;}
+  .glow-card{
+    background:rgba(8,6,20,0.8);backdrop-filter:blur(14px);
+    border:2px solid #38bdf8;border-radius:24px;
+    animation:rgbBorder 6s infinite linear;position:relative;overflow:hidden;
+  }
+  .rgb-title{font-family:'Orbitron';animation:rgbText 5s infinite linear;letter-spacing:2px;}
+  .video-thumbnail{
+    position:relative;border-radius:20px;overflow:hidden;
+    border:3px solid #2563eb;box-shadow:0 0 35px #2563eb;
+    cursor:pointer;transition:transform .3s;
+  }
+  .video-thumbnail:hover{transform:scale(1.02);}
+  .play-btn{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:80px;height:80px;border-radius:50%;
+    background:rgba(37,99,235,0.9);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 40px #2563eb;animation:floatY 2s infinite ease-in-out;
+  }
+  .play-btn i{color:white;font-size:30px;margin-left:5px;}
+  .setup-card{
+    background:rgba(0,0,0,0.45);border:2px dashed #38bdf8;
+    border-radius:18px;padding:20px;transition:all .3s;
+  }
+  .setup-card:hover{border-style:solid;box-shadow:0 0 30px rgba(56,189,248,0.4);transform:translateY(-3px);}
+  .get-started-btn{
+    background:linear-gradient(90deg,#2563eb,#38bdf8,#0ea5e9,#00e5ff,#2563eb);
+    background-size:300% 100%;animation:bgShift 3s infinite linear;
+    font-family:'Orbitron';letter-spacing:3px;
+    box-shadow:0 0 40px rgba(56,189,248,0.7);transition:all .3s;
+    position:relative;overflow:hidden;
+  }
+  .get-started-btn:hover{transform:scale(1.05);box-shadow:0 0 60px rgba(37,99,235,0.9);}
+  .owner-badge{
+    display:inline-flex;align-items:center;gap:8px;
+    background:rgba(0,0,0,0.6);border:2px solid #00e5ff;
+    padding:8px 20px;border-radius:50px;
+    box-shadow:0 0 25px rgba(0,229,255,0.4);
+  }
+  .owner-badge i{color:#00e5ff;}
+  .owner-badge span{font-family:'Orbitron';font-size:11px;font-weight:900;color:#00e5ff;letter-spacing:2px;}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+
+<div class="relative z-10 min-h-screen px-4 py-8">
+  <div class="text-center mb-8">
+    <h1 class="rgb-title text-3xl md:text-4xl font-black">TANBIR TCP</h1>
+    <p class="text-[10px] tracking-[0.5em] text-sky-400 font-bold mt-2 uppercase">Official TCP Panel</p>
+  </div>
+
+  <div class="glow-card max-w-md mx-auto p-5 sm:p-7">
+    <!-- Video Thumbnail -->
+    <div class="video-thumbnail mb-5" onclick="window.open('https://youtube.com/@tanbiryt-v8z?si=hmnDk2vqv7XD_1Tc','_blank')">
+      <div class="aspect-video bg-gradient-to-br from-indigo-900 via-sky-900 to-cyan-900 flex items-center justify-center relative">
+        <div class="play-btn"><i class="fa-solid fa-play"></i></div>
+        <div class="absolute top-3 left-3 bg-red-600 px-2 py-1 rounded text-[9px] font-bold tracking-wider">
+          <i class="fa-brands fa-youtube mr-1"></i>WATCH
+        </div>
+        <div class="absolute bottom-3 right-3 bg-black/80 px-2 py-1 rounded text-[10px] font-bold">
+          <i class="fa-solid fa-clock mr-1"></i>NEW
+        </div>
+      </div>
+    </div>
+    <p class="text-center text-xs text-cyan-300 mb-5 font-bold tracking-wide">
+      <i class="fa-solid fa-circle-play mr-1"></i>Watch Latest Video on YouTube
+    </p>
+
+    <!-- Setup Video -->
+    <div class="setup-card mb-5" onclick="window.open('https://youtube.com/@tanbiryt-v8z?si=hmnDk2vqv7XD_1Tc','_blank')">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-full bg-sky-600 flex items-center justify-center shadow-[0_0_20px_#2563eb] flex-shrink-0">
+          <i class="fa-solid fa-screwdriver-wrench text-white text-lg"></i>
+        </div>
+        <div class="flex-1">
+          <p class="text-[9px] text-gray-400 uppercase tracking-widest">Setup Guide</p>
+          <p class="text-sm font-bold text-cyan-300">Watch Setup Video</p>
+        </div>
+        <i class="fa-solid fa-arrow-right text-sky-400"></i>
+      </div>
+    </div>
+
+    <!-- Premium Feature Showcase -->
+    <div class="relative rounded-2xl overflow-hidden mb-5 p-5"
+         style="background:linear-gradient(135deg,rgba(37,99,235,0.08),rgba(56,189,248,0.08),rgba(0,229,255,0.08));border:2px solid #00e5ff;box-shadow:0 0 25px rgba(0,229,255,0.35);">
+      <div class="absolute inset-0 opacity-15" style="background-image:radial-gradient(circle,#00e5ff 1px,transparent 1px);background-size:22px 22px;"></div>
+      <div class="relative text-center">
+        <div class="inline-flex items-center gap-2 bg-black/60 border border-cyan-400 rounded-full px-4 py-1.5 mb-3">
+          <i class="fa-solid fa-crown text-cyan-400 text-xs"></i>
+          <span style="font-family:'Orbitron';font-size:10px;letter-spacing:2px;color:#00e5ff;font-weight:900;">PREMIUM SERVICE</span>
+        </div>
+        <h2 class="text-xl font-black mb-1" style="font-family:'Orbitron';background:linear-gradient(90deg,#2563eb,#38bdf8,#0ea5e9,#00e5ff,#2563eb);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:shine 3s infinite linear;">
+          ELITE BOT PANEL
+        </h2>
+        <p class="text-[10px] text-gray-300 tracking-widest mb-3">THE #1 CHOICE FOR PROFESSIONALS</p>
+        <div class="grid grid-cols-3 gap-2 mt-3">
+          <div class="bg-black/50 border border-cyan-400/40 rounded-xl p-2">
+            <i class="fa-solid fa-bolt text-cyan-400 text-sm"></i>
+            <p class="text-[8px] font-bold tracking-wider text-cyan-300 mt-1">ULTRA FAST</p>
+          </div>
+          <div class="bg-black/50 border border-green-400/40 rounded-xl p-2">
+            <i class="fa-solid fa-shield-halved text-green-400 text-sm"></i>
+            <p class="text-[8px] font-bold tracking-wider text-green-300 mt-1">SECURE LOGIN</p>
+          </div>
+          <div class="bg-black/50 border border-sky-400/40 rounded-xl p-2">
+            <i class="fa-solid fa-infinity text-sky-400 text-sm"></i>
+            <p class="text-[8px] font-bold tracking-wider text-sky-300 mt-1">300+ CMDS</p>
+          </div>
+        </div>
+        <p class="text-[9px] text-cyan-400 mt-3 tracking-wider font-bold">
+          <i class="fa-solid fa-star mr-1"></i>BUILT BY TANBIR TCP
+        </p>
+      </div>
+    </div>
+
+    <!-- Owner Badge -->
+    <div class="text-center mb-6">
+      <div class="owner-badge">
+        <i class="fa-solid fa-crown"></i>
+        <span>OWNER: TANBIR TCP</span>
+      </div>
+    </div>
+
+    <!-- Get Started -->
+    <div id="getStartedWrap" class="text-center">
+      <a href="/login" class="get-started-btn inline-block px-10 py-4 rounded-2xl text-white font-black text-sm uppercase">
+        <i class="fa-solid fa-rocket mr-2"></i>GET STARTED
+      </a>
+      <p class="text-[10px] text-gray-400 mt-3 tracking-widest">CLICK TO LOGIN →</p>
+    </div>
+  </div>
+
+  <div class="flex justify-center gap-6 mt-8">
+    <a href="https://t.me/TANBIR_YT1" target="_blank" class="text-2xl text-cyan-400 hover:scale-125 transition-all"><i class="fa-brands fa-telegram"></i></a>
+    <a href="https://youtube.com/@tanbiryt-v8z?si=hmnDk2vqv7XD_1Tc" target="_blank" class="text-2xl text-sky-500 hover:scale-125 transition-all"><i class="fa-brands fa-youtube"></i></a>
+    <a href="https://www.tiktok.com/@tanvirff549" target="_blank" class="text-2xl text-cyan-400 hover:scale-125 transition-all"><i class="fa-brands fa-tiktok"></i></a>
+  </div>
+  <div class="max-w-4xl mx-auto mt-8">{% include "_footer.html" %}</div>
+  <div style="height:40px"></div>
+  <p class="hidden text-center text-[10px] text-gray-500 mt-6 tracking-widest">© 2026 TANBIR TCP — ALL RIGHTS RESERVED</p>
+</div>
+
+<script>
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let W,H,sticks=[],shapes=[];
+const colors=['#2563eb','#38bdf8','#0ea5e9','#00e5ff','#0057ff','#2f4bff'];
+function init(){
+  W=canvas.width=innerWidth;H=canvas.height=innerHeight;
+  sticks=[];shapes=[];
+  for(let i=0;i<35;i++)sticks.push({x:Math.random()*W,y:Math.random()*H,len:Math.random()*70+20,a:Math.random()*6.28,vr:(Math.random()-.5)*.02,vx:(Math.random()-.5)*1.5,vy:(Math.random()-.5)*1.5,c:colors[i%colors.length]});
+  for(let i=0;i<25;i++)shapes.push({x:Math.random()*W,y:Math.random()*H,s:Math.random()*10+4,t:i%3,vx:(Math.random()-.5)*1.2,vy:(Math.random()-.5)*1.2,c:colors[(i+2)%colors.length]});
+}
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  sticks.forEach(s=>{
+    s.x+=s.vx;s.y+=s.vy;s.a+=s.vr;
+    if(s.x<-40)s.x=W+40;if(s.x>W+40)s.x=-40;
+    if(s.y<-40)s.y=H+40;if(s.y>H+40)s.y=-40;
+    ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.a);
+    ctx.strokeStyle=s.c;ctx.lineWidth=1.5;ctx.shadowBlur=12;ctx.shadowColor=s.c;
+    ctx.beginPath();ctx.moveTo(-s.len/2,0);ctx.lineTo(s.len/2,0);ctx.stroke();ctx.restore();
+  });
+  shapes.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<-20)p.x=W+20;if(p.x>W+20)p.x=-20;
+    if(p.y<-20)p.y=H+20;if(p.y>H+20)p.y=-20;
+    ctx.save();ctx.fillStyle=p.c;ctx.shadowBlur=10;ctx.shadowColor=p.c;
+    if(p.t===0){ctx.beginPath();ctx.arc(p.x,p.y,p.s/2,0,6.28);ctx.fill();}
+    else if(p.t===1){ctx.fillRect(p.x-p.s/2,p.y-p.s/2,p.s,p.s);}
+    else{ctx.beginPath();ctx.moveTo(p.x,p.y-p.s/2);ctx.lineTo(p.x+p.s/2,p.y+p.s/2);ctx.lineTo(p.x-p.s/2,p.y+p.s/2);ctx.closePath();ctx.fill();}
+    ctx.restore();
+  });
+  requestAnimationFrame(draw);
+}
+addEventListener('resize',init);
+init();draw();
+</script>
+
+<div style="position:fixed;bottom:0;left:0;right:0;text-align:center;padding:10px 0;font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:2px;color:#38bdf8;text-shadow:0 0 8px #2563eb,0 0 16px #0ea5e9;background:rgba(6,11,24,0.85);backdrop-filter:blur(4px);z-index:999;">
+  &#9889; CREDIT &amp; DESIGN: <span style="color:#00e5ff;text-shadow:0 0 8px #00e5ff;">TANBIR TCP</span> &#9889;
+</div>
+</body>
+</html>

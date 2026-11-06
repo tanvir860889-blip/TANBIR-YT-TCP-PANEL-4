@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TANBIR TCP — Control Panel</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  @keyframes neonBorder{
+    0%,100%{border-color:#2563eb;box-shadow:0 0 18px rgba(37,99,235,.7);}
+    33%{border-color:#00b7ff;box-shadow:0 0 22px rgba(0,183,255,.8);}
+    66%{border-color:#5fd4ff;box-shadow:0 0 22px rgba(95,212,255,.7);}
+  }
+  @keyframes bgShift{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+  @keyframes introZoom{0%{transform:scale(.94);opacity:0}100%{transform:scale(1);opacity:1}}
+  @keyframes inputPulse{0%,100%{box-shadow:0 0 12px rgba(0,183,255,.4)}50%{box-shadow:0 0 22px rgba(37,99,235,.8)}}
+  @keyframes pulseDot{0%,100%{box-shadow:0 0 0 0 rgba(0,183,255,.7)}50%{box-shadow:0 0 0 10px rgba(0,183,255,0)}}
+  @keyframes shineText{0%{background-position:-200% 0}100%{background-position:200% 0}}
+  @keyframes fadeIn{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
+
+  body{background:#02040a;color:#fff;font-family:'Rajdhani',sans-serif;overflow-x:hidden;margin:0}
+  #bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.55}
+  .wrap{position:relative;z-index:10;min-height:100vh;padding:16px 16px 60px}
+
+  /* TOP BAR */
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(3,8,18,.88);backdrop-filter:blur(14px);
+    border-radius:16px;border:1px solid rgba(0,183,255,.45);box-shadow:0 0 22px -6px rgba(0,183,255,.6);margin-bottom:12px;animation:introZoom .7s ease-out}
+  .menu-btn{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#0057ff,#00b7ff);display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 18px rgba(0,183,255,.65);cursor:pointer;transition:transform .2s;flex-shrink:0;border:0;color:#fff;font-size:18px}
+  .menu-btn:hover{transform:scale(1.08)}
+
+  /* SLIDE DRAWER MENU */
+  #scrim{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(3px);z-index:90;opacity:0;pointer-events:none;transition:opacity .3s}
+  #scrim.show{opacity:1;pointer-events:auto}
+  #drawer{position:fixed;top:0;left:0;bottom:0;width:min(300px,84vw);z-index:100;background:linear-gradient(180deg,#05101f,#02060d);
+    border-right:2px solid #00b7ff;box-shadow:0 0 40px rgba(0,183,255,.5);transform:translateX(-105%);transition:transform .38s cubic-bezier(.2,.8,.2,1);
+    display:flex;flex-direction:column;padding:16px;overflow-y:auto}
+  #drawer.show{transform:translateX(0)}
+  .d-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(0,183,255,.25)}
+  .d-title{font-family:'Orbitron';font-weight:900;letter-spacing:2px;font-size:14px;color:#00b7ff;text-shadow:0 0 12px #00b7ff}
+  .d-close{width:36px;height:36px;border-radius:10px;border:1.5px solid #ff4d6d;background:rgba(255,77,109,.12);color:#ff4d6d;cursor:pointer;font-size:15px;transition:.2s}
+  .d-close:hover{background:#ff4d6d;color:#fff;box-shadow:0 0 16px #ff4d6d}
+  .d-item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:13px 14px;margin-bottom:8px;border-radius:14px;border:1.5px solid rgba(0,183,255,.25);
+    background:rgba(0,183,255,.05);cursor:pointer;font-family:'Orbitron';font-size:11px;letter-spacing:1.4px;font-weight:800;color:#cfeaff;text-decoration:none;transition:.2s}
+  .d-item:hover{background:rgba(0,183,255,.16);border-color:#00b7ff;transform:translateX(4px);box-shadow:0 0 18px -4px rgba(0,183,255,.7)}
+  .d-item.on{background:linear-gradient(135deg,#0057ff,#00b7ff);color:#02101c;border-color:transparent;box-shadow:0 0 22px rgba(0,183,255,.7)}
+  .d-ic{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:linear-gradient(135deg,#0a3a8c,#00b7ff);color:#fff;font-size:13px}
+  .d-item.on .d-ic{background:rgba(255,255,255,.35)}
+  .d-badge{margin-left:auto;font-size:9px;padding:2px 8px;border-radius:99px;background:#0a2a4a;color:#5fd4ff}
+  .d-item.on .d-badge{background:rgba(255,255,255,.85);color:#02101c}
+  .d-sep{font-size:9px;letter-spacing:3px;color:#3d6288;margin:12px 4px 8px;font-weight:900;font-family:'Orbitron'}
+
+  .glass-card{background:rgba(3,8,18,.82);backdrop-filter:blur(14px);border-radius:22px;border:2px solid #2563eb;box-shadow:0 4px 30px rgba(0,0,0,.6);
+    position:relative;z-index:10;animation:neonBorder 6s infinite linear,fadeIn .5s ease-out}
+  .section-title{font-family:'Orbitron';font-size:11px;letter-spacing:3px;color:#00b7ff;font-weight:900;text-transform:uppercase;display:flex;align-items:center;gap:8px;margin-bottom:14px}
+  .section-title::before{content:'';width:4px;height:16px;background:#00b7ff;border-radius:4px;box-shadow:0 0 10px #00b7ff}
+  .input-wrap{position:relative}
+  .input-wrap i.left-ic{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:11px;color:#00b7ff;z-index:2}
+  .input-wrap .eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#5fd4ff;cursor:pointer;font-size:13px;background:none;border:0;z-index:2}
+  .rgb-input{width:100%;background:rgba(0,0,0,.55);border:2px solid rgba(0,183,255,.4);border-radius:12px;padding:12px 40px 12px 42px;outline:none;color:#fff;font-weight:700;font-size:13px;transition:all .3s;font-family:inherit}
+  .rgb-input::placeholder{color:#47617c}
+  .rgb-input:focus{background:rgba(0,183,255,.1);border-color:#2563eb;animation:inputPulse 2s infinite ease-in-out}
+  select.rgb-input{appearance:none}select.rgb-input option{background:#05101f;color:#fff}
+  .lbl{font-size:9px;letter-spacing:2px;color:#7f9bb8;text-transform:uppercase;font-weight:800;margin:0 0 4px 4px;display:block}
+
+  .btn-start{background:linear-gradient(90deg,#0066ff,#00b7ff,#0066ff);background-size:200% 100%;animation:bgShift 3s infinite linear;box-shadow:0 0 22px rgba(0,183,255,.6);transition:transform .15s;border:0;cursor:pointer;color:#fff}
+  .btn-start:hover{transform:scale(1.02)}
+  .btn-start:disabled,.btn-stop:disabled,.btn-restart:disabled,.btn-save:disabled{opacity:.45;pointer-events:none}
+  .btn-stop{background:linear-gradient(90deg,#e11d48,#ff5c86,#e11d48);background-size:200% 100%;animation:bgShift 3s infinite linear;box-shadow:0 0 20px rgba(225,29,72,.5);transition:transform .15s;border:0;cursor:pointer;color:#fff}
+  .btn-stop:hover{transform:scale(1.02)}
+  .btn-restart{background:linear-gradient(90deg,#2f7bff,#8fe9ff,#2f7bff);background-size:200% 100%;animation:bgShift 3s infinite linear;color:#02101c;box-shadow:0 0 20px rgba(95,212,255,.5);transition:transform .15s;border:0;cursor:pointer}
+  .btn-restart:hover{transform:scale(1.02)}
+  .btn-save{background:rgba(0,183,255,.1);border:1.5px solid #00b7ff;color:#5fd4ff;cursor:pointer;transition:.2s;box-shadow:0 0 14px -4px rgba(0,183,255,.6)}
+  .btn-save:hover{background:#00b7ff;color:#02101c;box-shadow:0 0 22px rgba(0,183,255,.7)}
+
+  .terminal{background:#000;border:2px solid #00b7ff;border-radius:14px;box-shadow:0 0 22px rgba(0,183,255,.4),inset 0 0 12px rgba(0,183,255,.1);overflow:hidden}
+  .terminal-header{background:linear-gradient(90deg,rgba(0,183,255,.18),rgba(37,99,235,.12));padding:8px 14px;border-bottom:1px solid rgba(0,183,255,.35);display:flex;justify-content:space-between;align-items:center}
+  #logs{padding:10px 14px;font-family:'Courier New',monospace;font-size:11px;color:#5fd4ff;line-height:1.6;height:260px;overflow-y:auto}
+  #logs::-webkit-scrollbar{width:4px}#logs::-webkit-scrollbar-thumb{background:#00b7ff;border-radius:4px}#logs::-webkit-scrollbar-track{background:rgba(0,183,255,.1)}
+  .log-line{border-left:2px solid #00b7ff;padding-left:8px;margin-bottom:3px;word-break:break-all}
+  .log-line .t{color:#3d6288;margin-right:6px}
+  .log-line.web{color:#2f7bff;border-color:#2f7bff}
+
+  #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);padding:10px 24px;border-radius:50px;font-family:'Orbitron';font-size:11px;z-index:9999;
+    background:rgba(0,0,0,.92);border:2px solid #00b7ff;box-shadow:0 0 20px #00b7ff;transition:all .35s;opacity:0;max-width:90vw;text-align:center}
+  #toast.active{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  .status-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(0,0,0,.6);padding:5px 14px;border-radius:50px;border:1px solid rgba(0,183,255,.3)}
+  .live-dot{width:9px;height:9px;border-radius:50%;background:#00b7ff;animation:pulseDot 1.5s infinite}
+  .premium-title{font-family:'Orbitron';font-weight:900;font-size:22px;letter-spacing:2px;background:linear-gradient(90deg,#00b7ff,#2563eb,#8fe9ff,#00b7ff);background-size:300% 100%;
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:shineText 4s infinite linear;filter:drop-shadow(0 0 10px rgba(0,183,255,.6))}
+  .avatar-badge{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#0057ff,#00b7ff);display:flex;align-items:center;justify-content:center;font-family:'Orbitron';font-weight:900;color:#fff;box-shadow:0 0 15px rgba(0,183,255,.6);font-size:14px}
+  .section-hidden{display:none !important}
+
+  /* features + commands */
+  .feat{background:linear-gradient(160deg,#0a1628,#060e1b);border:1.5px solid #12304f;border-radius:16px;padding:14px;margin-bottom:10px;transition:.25s;animation:fadeIn .4s both}
+  .feat:hover{border-color:#00b7ff;box-shadow:0 0 22px -6px rgba(0,183,255,.7)}
+  .feat h4{font-family:'Orbitron';font-size:12px;font-weight:900;letter-spacing:1px;color:#fff;display:flex;align-items:center;gap:8px;margin-bottom:5px}
+  .feat p{color:#8aa6c3;font-size:13px;line-height:1.5;margin-bottom:8px}
+  .chipc{display:inline-block;background:#050d19;border:1px solid #12304f;color:#00b7ff;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:800;cursor:pointer;margin:0 5px 5px 0;transition:.2s}
+  .chipc:hover{background:#00b7ff;color:#02101c;box-shadow:0 0 12px #00b7ff}
+  .cmdrow{display:flex;justify-content:space-between;gap:10px;padding:9px 12px;border-radius:12px;background:#050d19;border:1px solid #12304f;margin-bottom:7px;cursor:pointer;transition:.2s;font-size:13px}
+  .cmdrow:hover{border-color:#00b7ff;box-shadow:0 0 14px -4px rgba(0,183,255,.7)}
+  .cmdrow b{color:#00b7ff;white-space:nowrap}.cmdrow span{color:#8aa6c3;text-align:right}
+  .cfgsw{position:relative;width:46px;height:26px;flex:none;display:inline-block}.cfgsw input{opacity:0;width:0;height:0}
+  .cfgsw span{position:absolute;inset:0;background:#10253f;border-radius:99px;cursor:pointer;transition:.3s}
+  .cfgsw span::before{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;border-radius:50%;background:#fff;transition:.3s}
+  .cfgsw input:checked+span{background:linear-gradient(90deg,#0066ff,#00b7ff);box-shadow:0 0 12px rgba(0,183,255,.7)}.cfgsw input:checked+span::before{transform:translateX(20px)}
+</style>
+</head>
+<body data-role="{{ role }}">
+
+<canvas id="bg-canvas"></canvas>
+<div id="scrim"></div>
+
+<!-- ═══════ SLIDE MENU ═══════ -->
+<aside id="drawer" aria-label="Menu">
+  <div class="d-head">
+    <span class="d-title"><i class="fa-solid fa-bolt"></i> MENU</span>
+    <button class="d-close" id="d-close" aria-label="Close menu"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <button class="d-item on" data-s="control"><span class="d-ic"><i class="fa-solid fa-robot"></i></span>BOT CONTROL + LOGS<span class="d-badge">LIVE</span></button>
+  <button class="d-item" data-s="feat"><span class="d-ic"><i class="fa-solid fa-wand-magic-sparkles"></i></span>BOT FEATURES<span class="d-badge">NEW</span></button>
+  <button class="d-item" data-s="cmds"><span class="d-ic"><i class="fa-solid fa-terminal"></i></span>ALL COMMANDS<span class="d-badge" id="d-cmdcount">300</span></button>
+  <div class="d-sep">MORE</div>
+  <a class="d-item" href="/pro"><span class="d-ic"><i class="fa-solid fa-gauge-high"></i></span>PRO DASHBOARD</a>
+  <a class="d-item" href="https://youtube.com/@tanbiryt-v8z?si=hmnDk2vqv7XD_1Tc" target="_blank" rel="noopener"><span class="d-ic"><i class="fa-brands fa-youtube"></i></span>YOUTUBE</a>
+  <a class="d-item" href="https://t.me/TANBIR_YT1" target="_blank" rel="noopener"><span class="d-ic"><i class="fa-brands fa-telegram"></i></span>TELEGRAM</a>
+  <a class="d-item" href="https://www.tiktok.com/@tanvirff549" target="_blank" rel="noopener"><span class="d-ic"><i class="fa-brands fa-tiktok"></i></span>TIKTOK</a>
+  <a class="d-item" href="/logout" style="margin-top:auto;border-color:rgba(255,77,109,.5)"><span class="d-ic" style="background:linear-gradient(135deg,#9b1233,#ff4d6d)"><i class="fa-solid fa-right-from-bracket"></i></span>LOGOUT</a>
+</aside>
+
+<div class="wrap flex flex-col items-center">
+
+  <!-- TOP BAR -->
+  <div class="topbar w-full max-w-md relative">
+    <div class="flex items-center gap-3">
+      <button class="menu-btn" id="menu-btn" aria-label="Toggle menu"><i class="fa-solid fa-bars"></i></button>
+      <div class="avatar-badge">{{ user[0]|upper }}</div>
+      <div>
+        <p class="text-[8px] tracking-widest text-gray-400 uppercase">Logged in</p>
+        <p class="text-xs font-bold text-cyan-300">{{ user }}</p>
+      </div>
+    </div>
+    <a href="/logout" class="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase bg-red-950/40 border border-red-500 text-red-400 hover:bg-red-600 hover:text-white transition-all">
+      <i class="fa-solid fa-sign-out-alt"></i>
+    </a>
+  </div>
+
+  <!-- HEADER -->
+  <div class="text-center mb-3 w-full max-w-md">
+    <h1 class="premium-title">TANBIR TCP</h1>
+    <p class="text-[9px] tracking-[0.4em] text-sky-400 font-bold mt-1 uppercase">Premium TCP Panel</p>
+  </div>
+
+  <!-- STATUS -->
+  <div class="mb-3">
+    <div class="status-pill">
+      <span id="dot" class="w-2.5 h-2.5 rounded-full bg-red-600 shadow-[0_0_8px_#ff0000]"></span>
+      <span id="stext" class="text-[10px] font-black tracking-widest text-gray-400 uppercase">OFFLINE</span>
+      <span id="uptime" class="text-[10px] font-bold text-cyan-300 ml-1"></span>
+    </div>
+  </div>
+
+  <!-- ═════════ SECTION: CONTROL + LOGS ═════════ -->
+  <div id="sec-control" class="w-full max-w-md">
+    <div class="glass-card p-5 mb-3">
+      <div class="section-title"><i class="fa-solid fa-user-shield"></i><span>Bot Account</span></div>
+      <div class="space-y-2.5">
+        <div>
+          <label class="lbl" for="c-nick">Credit / Bot Name (shown in menus)</label>
+          <div class="input-wrap"><i class="fa-solid fa-user left-ic"></i><input id="c-nick" type="text" maxlength="20" placeholder="Credit name (e.g. TANBIR TCP)" class="rgb-input"></div>
+        </div>
+        <div>
+          <label class="lbl" for="c-uid">Bot UID</label>
+          <div class="input-wrap"><i class="fa-solid fa-crosshairs left-ic"></i><input id="c-uid" type="text" inputmode="numeric" placeholder="Bot UID" class="rgb-input"></div>
+        </div>
+        <div>
+          <label class="lbl" for="c-pw">Password</label>
+          <div class="input-wrap"><i class="fa-solid fa-key left-ic"></i><input id="c-pw" type="password" autocomplete="new-password" placeholder="Password" class="rgb-input"><button type="button" class="eye" id="eye"><i class="fa-solid fa-eye"></i></button></div>
+          <p class="text-[10px] text-gray-500 mt-1 ml-1" id="pw-hint">—</p>
+        </div>
+        <div>
+          <label class="lbl" for="c-reg">Region</label>
+          <div class="input-wrap"><i class="fa-solid fa-globe left-ic"></i>
+            <select id="c-reg" class="rgb-input"><option>BD</option><option>IND</option><option>PK</option><option>ID</option><option>SG</option><option>BR</option><option>ME</option><option>NA</option><option>EU</option><option>TH</option><option>VN</option></select></div>
+        </div>
+        <div class="flex items-center justify-between pt-1 px-1">
+          <span class="text-[11px] text-gray-300 font-bold">Auto start when site boots</span>
+          <label class="cfgsw"><input type="checkbox" id="c-auto"><span></span></label>
+        </div>
+      </div>
+      <p class="text-[9px] text-gray-500 mt-3 text-center">Saved into <b class="text-cyan-300">bot.txt</b> on the server — password is never sent back to the browser.</p>
+    </div>
+
+    <div class="glass-card p-5 mb-3">
+      <div class="section-title"><i class="fa-solid fa-gamepad"></i><span>Bot Controls</span></div>
+      <button id="b-start" class="btn-start w-full py-3 rounded-xl text-xs font-black tracking-widest uppercase mb-2"><i class="fa-solid fa-rocket mr-1"></i> SAVE &amp; START BOT</button>
+      <div class="grid grid-cols-3 gap-2">
+        <button id="b-stop" class="btn-stop py-2.5 rounded-xl text-[11px] font-black tracking-wider uppercase"><i class="fa-solid fa-stop mr-1"></i> Stop</button>
+        <button id="b-restart" class="btn-restart py-2.5 rounded-xl text-[11px] font-black tracking-wider uppercase"><i class="fa-solid fa-rotate-right mr-1"></i> Restart</button>
+        <button id="b-save" class="btn-save py-2.5 rounded-xl text-[11px] font-black tracking-wider uppercase"><i class="fa-solid fa-floppy-disk mr-1"></i> Save</button>
+      </div>
+      <div class="grid grid-cols-2 gap-2 mt-2">
+        <button data-mode="phone" class="btn-save py-2 rounded-xl text-[10px] font-bold uppercase"><i class="fa-solid fa-mobile-screen mr-1"></i> Phone login</button>
+        <button data-mode="pc" class="btn-save py-2 rounded-xl text-[10px] font-bold uppercase"><i class="fa-solid fa-desktop mr-1"></i> PC login</button>
+      </div>
+    </div>
+
+    <!-- LIVE LOGS — right below the controls -->
+    <div class="w-full mb-4">
+      <div class="section-title"><i class="fa-solid fa-terminal"></i><span>Live Terminal</span></div>
+      <div class="terminal">
+        <div class="terminal-header">
+          <div class="flex items-center gap-2"><div class="live-dot"></div><span class="text-[9px] font-bold tracking-widest text-cyan-300">LIVE STREAM</span></div>
+          <div class="flex gap-2">
+            <button id="l-clear" class="text-[9px] text-sky-400 font-bold uppercase border border-sky-500/40 rounded px-2 py-0.5 hover:bg-sky-500/20">Clear</button>
+            <button id="l-dl" class="text-[9px] text-sky-400 font-bold uppercase border border-sky-500/40 rounded px-2 py-0.5 hover:bg-sky-500/20">Save</button>
+          </div>
+        </div>
+        <div id="logs"><div class="log-line web">&gt; System ready. Press START to bring the bot online…</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════ SECTION: FEATURES ═════════ -->
+  <div id="sec-feat" class="w-full max-w-md section-hidden">
+    <div class="glass-card p-5 mb-3">
+      <div class="section-title"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Bot Features</span></div>
+      <p class="text-[11px] text-gray-400 mb-3">Tap any command chip to copy it. Use them in the Free Fire squad / clan chat.</p>
+      <div id="featlist"></div>
+    </div>
+  </div>
+
+  <!-- ═════════ SECTION: COMMANDS ═════════ -->
+  <div id="sec-cmds" class="w-full max-w-md section-hidden">
+    <div class="glass-card p-5 mb-3">
+      <div class="section-title"><i class="fa-solid fa-terminal"></i><span>All Commands</span></div>
+      <div class="input-wrap mb-3"><i class="fa-solid fa-magnifying-glass left-ic"></i><input id="q" type="text" placeholder="Search commands… (time, calc, bold)" class="rgb-input"></div>
+      <div id="cmdlist"></div>
+      <p class="text-[10px] text-gray-500 text-center mt-2" id="cmdnote"></p>
+    </div>
+  </div>
+
+  <div class="w-full max-w-4xl">{% include '_footer.html' %}</div>
+</div>
+
+<div id="toast">SYSTEM READY</div>
+
+<div style="position:fixed;bottom:0;left:0;right:0;text-align:center;padding:9px 0;font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:2px;color:#00b7ff;text-shadow:0 0 8px #2563eb,0 0 16px #00b7ff;background:rgba(2,4,10,.88);backdrop-filter:blur(4px);z-index:80">
+  &#9889; CREDIT &amp; DESIGN: <span style="color:#8fe9ff;text-shadow:0 0 8px #00e5ff">TANBIR TCP</span> &#9889;
+</div>
+
+<script>
+const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+/* ═══════════ SLIDE MENU (open / close / swipe) ═══════════ */
+const drawer = $('#drawer'), scrim = $('#scrim'), mbtn = $('#menu-btn');
+function openMenu() { drawer.classList.add('show'); scrim.classList.add('show'); mbtn.innerHTML = '<i class="fa-solid fa-xmark"></i>' }
+function closeMenu() { drawer.classList.remove('show'); scrim.classList.remove('show'); mbtn.innerHTML = '<i class="fa-solid fa-bars"></i>' }
+mbtn.onclick = () => drawer.classList.contains('show') ? closeMenu() : openMenu();
+$('#d-close').onclick = closeMenu; scrim.onclick = closeMenu;
+addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu() });
+let tx = null, ty = null;
+addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY }, { passive: true });
+addEventListener('touchend', e => {
+  if (tx === null) return; const dx = e.changedTouches[0].clientX - tx, dy = Math.abs(e.changedTouches[0].clientY - ty);
+  if (dy < 60) { if (dx > 70 && tx < 36) openMenu(); else if (dx < -70 && drawer.classList.contains('show')) closeMenu() } tx = null;
+}, { passive: true });
+
+function showSection(s) {
+  ['control', 'feat', 'cmds'].forEach(n => $('#sec-' + n).classList.toggle('section-hidden', n !== s));
+  $$('.d-item[data-s]').forEach(b => b.classList.toggle('on', b.dataset.s === s));
+  closeMenu(); scrollTo({ top: 0, behavior: 'smooth' });
+}
+$$('.d-item[data-s]').forEach(b => b.onclick = () => showSection(b.dataset.s));
+
+/* ═══════════ NEON CANVAS BACKGROUND ═══════════ */
+const canvas = $('#bg-canvas'), ctx = canvas.getContext('2d');
+let W, H, sticks = [], sparks = [];
+const colors = ['#2563eb', '#00b7ff', '#5fd4ff', '#0057ff', '#2f7bff'];
+function initCanvas() {
+  W = canvas.width = innerWidth; H = canvas.height = innerHeight; sticks = [];
+  const n = Math.min(22, Math.floor(innerWidth / 38));
+  for (let i = 0; i < n; i++) sticks.push({ x: Math.random() * W, y: Math.random() * H, len: Math.random() * 50 + 20, a: Math.random() * 6.28, vr: (Math.random() - .5) * .02, vx: (Math.random() - .5), vy: (Math.random() - .5), c: colors[i % colors.length], w: Math.random() * 2 + 1 });
+}
+function renderCanvas() {
+  ctx.clearRect(0, 0, W, H);
+  sticks.forEach(s => {
+    s.x += s.vx; s.y += s.vy; s.a += s.vr;
+    if (s.x < -40) s.x = W + 40; if (s.x > W + 40) s.x = -40; if (s.y < -40) s.y = H + 40; if (s.y > H + 40) s.y = -40;
+    ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.a); ctx.strokeStyle = s.c; ctx.lineWidth = s.w; ctx.shadowBlur = 10; ctx.shadowColor = s.c;
+    ctx.beginPath(); ctx.moveTo(-s.len / 2, 0); ctx.lineTo(s.len / 2, 0); ctx.stroke(); ctx.restore();
+  });
+  sparks = sparks.filter(p => p.a > 0);
+  sparks.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += .08; p.a -= .02; ctx.save(); ctx.globalAlpha = Math.max(p.a, 0); ctx.fillStyle = p.c; ctx.shadowBlur = 10; ctx.shadowColor = p.c; ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, 6.28); ctx.fill(); ctx.restore() });
+  requestAnimationFrame(renderCanvas);
+}
+addEventListener('resize', initCanvas);
+addEventListener('pointerdown', e => { for (let i = 0; i < 14; i++) { const a = Math.random() * 6.28, sp = Math.random() * 4 + 1; sparks.push({ x: e.clientX, y: e.clientY, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, s: Math.random() * 2 + 1, c: colors[Math.floor(Math.random() * colors.length)], a: 1 }) } });
+initCanvas(); renderCanvas();
+
+/* ═══════════ helpers ═══════════ */
+function msg(t) { const e = $('#toast'); e.textContent = t; e.classList.add('active'); clearTimeout(msg._t); msg._t = setTimeout(() => e.classList.remove('active'), 3000) }
+async function api(path, method = 'GET', body) {
+  try {
+    const r = await fetch(path, { method, headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined });
+    if (r.status === 401) { location.href = '/login'; return { ok: false } }
+    return await r.json();
+  } catch (e) { return { ok: false, error: 'Network error' } }
+}
+function fmtUp(s) { if (!s) return ''; const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60); return (h ? h + 'h ' : '') + m + 'm ' + (s % 60) + 's' }
+async function busy(btn, fn) { const old = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; try { await fn() } finally { btn.disabled = false; btn.innerHTML = old } }
+
+/* ═══════════ CONFIG → bot.txt ═══════════ */
+$('#eye').onclick = () => { const p = $('#c-pw'); p.type = p.type === 'password' ? 'text' : 'password' };
+async function loadConfig() {
+  const j = await api('/api/config'); if (!j.ok) return;
+  $('#c-uid').value = /^0+$/.test(j.uid) ? '' : j.uid; $('#c-nick').value = j.nick; $('#c-reg').value = j.region; $('#c-auto').checked = j.autostart;
+  $('#pw-hint').textContent = j.has_password ? '✅ Password saved (hidden). Type a new one only to replace it.' : '⚠ No password saved yet.';
+}
+function formBody(start) {
+  return { uid: $('#c-uid').value.trim(), nick: $('#c-nick').value.trim(), region: $('#c-reg').value, password: $('#c-pw').value.trim(), autostart: $('#c-auto').checked, start };
+}
+async function saveCfg(start, btn) {
+  await busy(btn, async () => {
+    const j = await api('/api/config', 'POST', formBody(start));
+    msg(j.message || j.error || 'Error'); if (navigator.vibrate) navigator.vibrate(40);
+    if (j.ok) { $('#c-pw').value = ''; loadConfig(); setTimeout(refreshStatus, 700) }
+  });
+}
+$('#b-start').onclick = e => saveCfg(true, e.currentTarget);
+$('#b-save').onclick = e => saveCfg(false, e.currentTarget);
+$('#c-auto').onchange = async () => { const j = await api('/api/config', 'POST', { autostart: $('#c-auto').checked }); msg(j.ok ? 'Auto-start ' + ($('#c-auto').checked ? 'ON' : 'OFF') : j.error) };
+$('#b-stop').onclick = e => busy(e.currentTarget, async () => { const j = await api('/api/bot/stop', 'POST'); msg(j.message || j.error); setTimeout(refreshStatus, 600) });
+$('#b-restart').onclick = e => busy(e.currentTarget, async () => { const j = await api('/api/bot/restart', 'POST'); msg(j.message || j.error); setTimeout(refreshStatus, 800) });
+$$('[data-mode]').forEach(b => b.onclick = async () => { const j = await api('/api/mode', 'POST', { mode: b.dataset.mode }); msg(j.message || j.error) });
+
+/* ═══════════ STATUS ═══════════ */
+async function refreshStatus() {
+  const j = await api('/api/status'); if (!j.ok) return;
+  $('#dot').className = j.running ? 'w-2.5 h-2.5 rounded-full bg-green-400 shadow-[0_0_12px_#00ff88]' : 'w-2.5 h-2.5 rounded-full bg-red-600 shadow-[0_0_8px_#ff0000]';
+  $('#stext').textContent = j.running ? 'RUNNING' : 'OFFLINE';
+  $('#stext').className = 'text-[10px] font-black tracking-widest uppercase ' + (j.running ? 'text-green-400' : 'text-gray-400');
+  $('#uptime').textContent = j.running ? '• ' + fmtUp(j.uptime) : '';
+  $('#d-cmdcount').textContent = j.commands || 300;
+}
+
+/* ═══════════ LIVE LOGS (below the controls) ═══════════ */
+let lastLog = 0, allLogs = [];
+function addLine(r) {
+  const box = $('#logs'), d = document.createElement('div'); d.className = 'log-line' + (r.src === 'bot' ? '' : ' web');
+  const t = document.createElement('span'); t.className = 't'; t.textContent = r.t; d.appendChild(t); d.appendChild(document.createTextNode(r.msg)); box.appendChild(d);
+  while (box.childElementCount > 600) box.firstChild.remove();
+}
+async function pollLogs() {
+  const j = await api('/api/logs?since=' + lastLog); if (!j.ok || !j.logs.length) return;
+  lastLog = j.last; const box = $('#logs'), stick = box.scrollTop + box.clientHeight >= box.scrollHeight - 40;
+  allLogs.push(...j.logs); if (allLogs.length > 1500) allLogs = allLogs.slice(-1500);
+  j.logs.forEach(addLine); if (stick) box.scrollTop = box.scrollHeight;
+}
+$('#l-clear').onclick = async () => { await api('/api/logs/clear', 'POST'); $('#logs').textContent = ''; allLogs = []; msg('Logs cleared') };
+$('#l-dl').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([allLogs.map(r => `[${r.t}] ${r.msg}`).join('\n')], { type: 'text/plain' })); a.download = 'tanbir-tcp-console.txt'; a.click() };
+
+/* ═══════════ FEATURES ═══════════ */
+const FEATS = [
+  ['🚀', 'Website Control', 'UID + password + credit name from this page go to bot.txt. Press Start and the bot goes online. Stop / Restart / Auto-start included.', ['Save & Start', 'Restart', 'Auto-start']],
+  ['📖', 'Help Menu (300 cmds)', '20 pages × 15 commands, generated from one registry. Open all pages or just one.', ['/help', '/help 7', '/search']],
+  ['💃', 'Emotes', '417+ numbered emotes and 470 named emotes. Self emote, team-code emote, copy mode and emote menus.', ['/menu1', '/e', '/copy', '/dance', '/as']],
+  ['🔥', 'Evo Emote Cycles', 'Evo gun emote cycles for you and the bot, with simple stop commands.', ['/ob55', '/max', '@max', '@evos', '/s']],
+  ['👥', 'Squad Tools', 'Open squad, invite and group commands with the OB55 squad packets.', ['/3', '/4', '/5', '/6']],
+  ['🏅', 'Badge & Share Cards', 'Badge commands and group / room / clan / title / workshop share cards sent to the current chat.', ['/s1', '/s5', '.s3', '.s6', '.s7']],
+  ['🕒', 'Time & Date', 'World time for 54 countries, time difference, countdown and calendar helpers.', ['/time bd', '/time all', '/timediff', '/date', '/countdown']],
+  ['🌦', 'Weather & Info', 'Weather, zodiac, YouTube and TikTok channel lookups and player info.', ['/weather', '/yt', '/tt', '/info', '/zodiac']],
+  ['🧮', 'Math & Money', 'Calculator, percent, tip, VAT, EMI, interest, geometry and number tools.', ['/calc', '/percent', '/emi', '/sqrt', '/isprime']],
+  ['🔁', 'Converters', 'Temperature, distance, weight, volume, speed and data size converters.', ['/c2f', '/km2mi', '/kg2lb', '/gb2mb', '/bmi']],
+  ['🔤', 'Text & Fonts', 'Stylish fonts, encoders and text tools.', ['/bold', '/script', '/b64', '/morse', '/translet']],
+  ['😂', 'Fun & Games', 'Jokes, love/luck predictions, riddles, quotes, dice, slots, trivia and roasts.', ['/joke', '/love', '/luck', '/dhadha', '/slots', '/roast']],
+  ['🎨', 'Art & Banners', 'ASCII art, boxes, pyramids, diamonds, banners and bordered name cards.', ['/banner', '/box', '/pyramid', '/name', '/catart']],
+  ['🛡', 'Owner & Admin', 'Owner-only controls: restart, PC/phone login mode, message design swap and admin list.', ['/restart', '/pc', '/phone', '/admin', '/display_msg']],
+  ['🤖', 'Bot Status', 'Ping, uptime, version, command count and random command ideas.', ['/ping', '/uptime', '/botinfo', '/cmdcount', '/randcmd']],
+  ['🔒', 'Secure Panel', 'Salted-hash logins, rate-limited sign-in, admin user manager (Pro Dashboard) and a live console with download.', ['Live Terminal', 'Pro Dashboard']]
+];
+function copyCmd(c) { if (/^[\/@.]/.test(c)) { navigator.clipboard?.writeText(c); msg('Copied ' + c) } }
+(function () {
+  const box = $('#featlist');
+  FEATS.forEach((f, i) => {
+    const d = document.createElement('div'); d.className = 'feat'; d.style.animationDelay = i * 35 + 'ms';
+    const h = document.createElement('h4'); h.textContent = f[0] + ' ' + f[1]; const p = document.createElement('p'); p.textContent = f[2];
+    d.appendChild(h); d.appendChild(p);
+    f[3].forEach(c => { const k = document.createElement('span'); k.className = 'chipc'; k.textContent = c; k.onclick = () => copyCmd(c); d.appendChild(k) });
+    box.appendChild(d);
+  });
+})();
+
+/* ═══════════ COMMANDS ═══════════ */
+let CMDS = [];
+function drawCmds() {
+  const q = $('#q').value.toLowerCase().trim(), box = $('#cmdlist'); box.textContent = '';
+  const rows = CMDS.filter(c => !q || (c.cmd + ' ' + c.desc).toLowerCase().includes(q));
+  rows.slice(0, 120).forEach(c => {
+    const r = document.createElement('div'); r.className = 'cmdrow'; const b = document.createElement('b'); b.textContent = c.cmd; const s = document.createElement('span'); s.textContent = c.desc;
+    r.appendChild(b); r.appendChild(s); r.onclick = () => copyCmd(c.cmd.split(' ')[0]); box.appendChild(r);
+  });
+  $('#cmdnote').textContent = rows.length > 120 ? 'Showing 120 of ' + rows.length + ' — type to search' : (rows.length ? '' : 'No command found.');
+}
+$('#q').oninput = drawCmds;
+(async () => { const j = await api('/api/commands'); CMDS = j.commands || []; drawCmds() })();
+
+/* ═══════════ boot ═══════════ */
+loadConfig(); refreshStatus(); pollLogs();
+setInterval(refreshStatus, 4000); setInterval(pollLogs, 2000);
+</script>
+</body>
+</html>
